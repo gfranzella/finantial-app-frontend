@@ -5,6 +5,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { useUser } from '@clerk/clerk-react';
 import { Transaction } from '../types';
 import { NumericFormat } from 'react-number-format'; 
+import { toast } from 'react-toastify'; 
 
 type FormControlElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
@@ -69,7 +70,12 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ transaction, onSave }
         userId: user.id,
         userName: user.fullName
       };
-      onSave(transactionData); // Usa onSave para manejar la lógica de agregar o actualizar
+      try {
+        onSave(transactionData); // Usa onSave para manejar la lógica de agregar o actualizar
+        toast.success('Transacción guardada con éxito'); // Mostrar notificación de éxito
+      } catch (error) {
+        toast.error('Error al guardar la transacción'); // Mostrar notificación de error
+      }
     } else {
       console.error('User is not authenticated');
     }
