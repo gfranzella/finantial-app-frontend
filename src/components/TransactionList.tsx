@@ -18,14 +18,16 @@ interface TransactionListProps {
 }
 
 const headers = [
-  { label: 'Tipo', key: 'type' },
-  { label: 'Descripción', key: 'description' },
-  { label: 'Comentario', key: 'comments' },
-  { label: 'Ingreso', key: 'amount', type: 'ingreso' },  // Ejemplo de cómo manejar tipos
-  { label: 'Egresos', key: 'amount', type: 'egreso' },
-  { label: 'Moneda', key: 'currency' },
-  { label: 'Tasa', key: 'exchangeRate' },
-  { label: 'Fecha Transacción', key: 'transactionDate' }
+  { label: 'Tipo', key: 'type', width:'70px'},
+  { label: 'Descripción', key: 'description', width:'150px'},
+  { label: 'Comentario', key: 'comments', width:'150px' },
+  { label: 'Ingreso', key: 'amount', type: 'ingreso', width:'150px' },  // Ejemplo de cómo manejar tipos
+  { label: 'Egresos', key: 'amount', type: 'egreso', width:'150px' },
+  { label: 'Moneda', key: 'currency', width:'90px' },
+  { label: 'Tasa', key: 'exchangeRate', width:'70px' },
+  { label: 'Valor Convertido', key: 'convertedValue', width:'250px' },
+  { label: 'Fecha Transacción', key: 'transactionDate', width:'250px' },
+  { label: 'Usuario', key: 'userName', width:'150px' }
 ];
 
 const TransactionList: React.FC<TransactionListProps> = ({ transactions, onEdit, onDelete, onSort, sortConfig }) => {
@@ -46,6 +48,11 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions, onEdit,
     }).format(value);
   }
 
+  const calculateConvertedValue = (amount: number, exchangeRate: number | undefined) => {
+    if (!exchangeRate) return 'N/A';
+    return formatNumber(amount * exchangeRate);
+  };
+
   return (
     <div>
       <h2>Transacciones</h2>
@@ -53,14 +60,14 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions, onEdit,
         <thead>
         <tr>
           {headers.map(header => (
-            <th key={header.label} onClick={() => onSort(header.key as keyof Transaction, header.type)}>
+            <th key={header.label} onClick={() => onSort(header.key as keyof Transaction, header.type)} style={{width: header.width, cursor: 'pointer'}}>
               {header.label}
               {sortConfig.key === header.key && sortConfig.type === header.type && (
                 sortConfig.direction === 'ascending' ? <ArrowDown size={16} /> : <ArrowUp size={16} />
               )}
             </th>
           ))}
-          <th>Acciones</th>
+          <th style={{width:'100px'}}>Acciones</th>
         </tr>
         </thead>
         <tbody>
@@ -73,7 +80,11 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions, onEdit,
               <td style={{color:'red', fontWeight:'bold'}}>{transaction.type === "egreso" ? formatNumber(-transaction.amount) : ""}</td>
               <td>{transaction.currency}</td>
               <td>{transaction.exchangeRate || 'N/A'}</td>
+              <td>
+                {transaction.currency === 'VES' ? '$' + calculateConvertedValue(transaction.amount, transaction.exchangeRate) : 'N/A'}
+              </td>
               <td>{formatDate(transaction.transactionDate)}</td>
+              <td>{transaction.userName || 'No Registrado'}</td>
               <td>
                 <button onClick={() => onEdit(transaction)} style={{ border: 'none', background: 'none', marginRight: '10px' }}>
                   <Pencil color="blue" size={20} />

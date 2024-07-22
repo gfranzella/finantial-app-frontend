@@ -7,6 +7,8 @@ export interface Transaction {
     currency: string;
     exchangeRate?: number;
     transactionDate: Date;
+    userName:string;
+    convertedValue?: number; 
   }
 
 // Asegúrate de que React esté disponible globalmente

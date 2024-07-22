@@ -25,7 +25,7 @@ const HomePage: React.FC = () => {
     const fetchTransactions = async () => {
       try {
         const res = await axios.get<Transaction[]>('/transactions');
-        console.log("Transactions fetched:", res.data);
+        // console.log("Transactions fetched:", res.data);
         setTransactions(res.data);
       } catch (err) {
         console.error('Error fetching transactions:', err);
@@ -39,7 +39,9 @@ const HomePage: React.FC = () => {
   // Usamos useMemo para calcular transacciones filtradas y ordenadas
   const processedTransactions = useMemo(() => {
     let processed = [...transactions];
-    console.log("Original transactions:", processed);
+    // console.log("Original transactions:", processed);
+    console.log("filters ", processed.filter(transaction => transaction.userName));
+    
 
     // Filtrar
     if (filter) {
@@ -48,7 +50,8 @@ const HomePage: React.FC = () => {
         transaction.description.toLowerCase().includes(lowercasedFilter) ||
         transaction.type.toLowerCase().includes(lowercasedFilter) ||
         transaction.amount.toString().includes(lowercasedFilter) ||
-        (transaction.comments && transaction.comments.toLowerCase().includes(lowercasedFilter))
+        (transaction.comments && transaction.comments.toLowerCase().includes(lowercasedFilter)) ||
+        (transaction.userName && transaction.userName.toLowerCase().includes(lowercasedFilter))
       );
     }
 
@@ -67,7 +70,7 @@ const HomePage: React.FC = () => {
         }
         return 0;
       });
-      console.log("Sorted transactions:", processed);
+      // console.log("Sorted transactions:", processed);
     }
     return processed;
   }, [transactions, filter, sortConfig]);
@@ -140,16 +143,13 @@ const HomePage: React.FC = () => {
       const newDirection = isAscending ? 'descending' : 'ascending';
   
       const sortedTransactions = [...transactions].sort((a, b) => {
-        // Aquí simplificamos la obtención de valores a comparar.
-        const aValue = a[key];
-        const bValue = b[key];
-        
-        // Realizamos la comparación dependiendo del tipo de dato.
+        const aValue = key === 'convertedValue' && a.currency === 'VES' ? (a.amount * (a.exchangeRate || 1)) : a[key];
+        const bValue = key === 'convertedValue' && b.currency === 'VES' ? (b.amount * (b.exchangeRate || 1)) : b[key];
+  
         if (typeof aValue === 'number' && typeof bValue === 'number') {
           return newDirection === 'ascending' ? aValue - bValue : bValue - aValue;
         }
   
-        // Para datos que son strings o fechas, convertimos todo a string para comparar.
         return newDirection === 'ascending' ? 
           String(aValue).localeCompare(String(bValue)) :
           String(bValue).localeCompare(String(aValue));
