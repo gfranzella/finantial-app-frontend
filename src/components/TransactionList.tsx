@@ -50,12 +50,12 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions, onEdit,
 
   const calculateConvertedValue = (amount: number, exchangeRate: number | undefined) => {
     if (!exchangeRate) return 'N/A';
-    return formatNumber(amount * exchangeRate);
+    return formatNumber(amount / exchangeRate);
   };
 
   return (
     <div>
-      <h2>Transacciones</h2>
+      <h2 className='pb-4'>Transacciones</h2>
       <Table striped bordered hover>
         <thead>
         <tr>

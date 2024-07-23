@@ -3,6 +3,7 @@ import { Container, Modal, Button  } from 'react-bootstrap';
 import TransactionForm from '../components/TransactionForm';
 import TransactionList from '../components/TransactionList';
 import TransactionFilters from '../components/TransactionFilter';
+import TransactionSummary from '../components/TransactionSummary';
 import axios from '../axiosConfig';
 import { Transaction } from '../types';
 
@@ -18,6 +19,8 @@ const HomePage: React.FC = () => {
     direction: 'ascending' | 'descending';
     type?: string;  // Agregar esto si aún no está
   }>({ key: null, direction: 'ascending' });
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 
 
 
@@ -40,7 +43,7 @@ const HomePage: React.FC = () => {
   const processedTransactions = useMemo(() => {
     let processed = [...transactions];
     // console.log("Original transactions:", processed);
-    console.log("filters ", processed.filter(transaction => transaction.userName));
+    // console.log("filters ", processed.filter(transaction => transaction.userName));
     
 
     // Filtrar
@@ -53,6 +56,15 @@ const HomePage: React.FC = () => {
         (transaction.comments && transaction.comments.toLowerCase().includes(lowercasedFilter)) ||
         (transaction.userName && transaction.userName.toLowerCase().includes(lowercasedFilter))
       );
+    }
+
+    // Filtrar por rango de fechas
+    if (startDate || endDate) {
+      processed = processed.filter(transaction => {
+          const transactionDate = new Date(transaction.transactionDate);
+          return (!startDate || transactionDate >= startDate) && 
+                (!endDate || transactionDate <= endDate);
+      });
     }
 
     // Ordenar
@@ -73,7 +85,7 @@ const HomePage: React.FC = () => {
       // console.log("Sorted transactions:", processed);
     }
     return processed;
-  }, [transactions, filter, sortConfig]);
+  }, [transactions, filter, sortConfig, endDate, startDate]);
 
 
   const onEdit = (transaction: Transaction) => {
@@ -161,7 +173,12 @@ const HomePage: React.FC = () => {
   };
   
   
-  
+  const onDateRangeChange = (startDate: Date | undefined, endDate: Date | undefined) => {
+    // console.log(startDate, endDate);
+    setStartDate(startDate);
+    setEndDate(endDate);
+    
+};
 
   return (
     <Container>
@@ -170,9 +187,13 @@ const HomePage: React.FC = () => {
       <div className="mb-2">
         <TransactionForm onSave={handleTransactionSave}/>
       </div>
-      <h2 className='mt-5'>Filtros</h2>
+      <h2 className='mt-5 pb-4'>Cálculos</h2>
       <div className="mb-5">
-        <TransactionFilters onFilterChange={setFilter} />
+        <TransactionSummary transactions={processedTransactions} />
+      </div>
+      <h2 className='mt-5 pb-4'>Filtros</h2>
+      <div className="mb-5">
+        <TransactionFilters onFilterChange={setFilter} onDateRangeChange={onDateRangeChange} />
       </div>
       <div className="mb-5">
         <TransactionList
