@@ -26,3 +26,4 @@ yarn-error.log*
 # Firebase cache & temporary files
 .firebase/
 
+.vercel
