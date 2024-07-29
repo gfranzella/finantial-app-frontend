@@ -28,8 +28,13 @@ const HomePage: React.FC = () => {
     const fetchTransactions = async () => {
       try {
         const res = await axios.get<Transaction[]>('/transactions');
+        const enrichedTransactions = res.data.map(transaction => ({
+          ...transaction,
+          convertedValue: transaction.currency === 'VES' ? transaction.amount / (transaction.exchangeRate || 1) : transaction.amount
+        }));
         // console.log("Transactions fetched:", res.data);
-        setTransactions(res.data);
+        setTransactions(enrichedTransactions);
+        // setTransactions(res.data);
       } catch (err) {
         console.error('Error fetching transactions:', err);
       }
