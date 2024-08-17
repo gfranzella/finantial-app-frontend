@@ -73,7 +73,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ transaction, onSave, 
       const transactionData = {
         ...formData,
         userId: user.id,
-        userName: user.fullName
+        userName: user.fullName !== null ? user.fullName : 'El Pendejo de mi cuño'
       };
       try {
         onSave(transactionData); // Usa onSave para manejar la lógica de agregar o actualizar
