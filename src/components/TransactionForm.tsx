@@ -1,4 +1,4 @@
-import React, { useEffect, useState }from 'react';
+import React, { useEffect, useState, useMemo }from 'react';
 import { Form, Button, Row, Col } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -12,36 +12,41 @@ type FormControlElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaEle
 interface TransactionFormProps {
   transaction?: Transaction | null; // Opcional, usado para la edición
   onSave: (transaction: any) => void; // Maneja tanto agregar como actualizar
+  filterBarajas: boolean;
 }
 
-const initialState = {
-  _id: '',
-  type: '',
-  description: '',
-  comments: '',
-  amount: 0.00,
-  currency: 'USD',
-  exchangeRate: 1,
-  transactionDate: new Date()
-};
 
-const TransactionForm: React.FC<TransactionFormProps> = ({ transaction, onSave }) => {
+const TransactionForm: React.FC<TransactionFormProps> = ({ transaction, onSave, filterBarajas }) => {
+  // Usando useMemo para evitar recrear initialState en cada renderización
+  const initialState = useMemo(() => ({
+    _id: '',
+    type: '',
+    description: filterBarajas ? '' : 'ESP - BARAJAS', // Controla la descripción inicial basada en filterBarajas
+    comments: '',
+    amount: 0.00,
+    currency: filterBarajas ? 'USD' : 'EUR', // Controla el currency inicial basado en filterBarajas
+    exchangeRate: 1,
+    transactionDate: new Date()
+  }), [filterBarajas]); // Dependencia en filterBarajas
+  
   const { user } = useUser();
   const [formData, setFormData] = useState(initialState);
   const [amountError, setAmountError] = useState<boolean>(false);
+// console.log("este es el filter bajaras", filterBarajas);
 
   useEffect(() => {
     if (transaction) {
       setFormData({
         ...initialState, // Comienza con valores predeterminados
         ...transaction, // Sobreescribe con valores de la transacción
+        description: filterBarajas ? transaction.description : 'ESP - BARAJAS', // Siempre asegúrate de que la descripción sea correcta
         comments: transaction.comments || '', // Asegúrate de que comments es siempre string
         transactionDate: new Date(transaction.transactionDate || new Date()) // Maneja fechas no válidas
       });
     } else {
       setFormData(initialState); // Limpia el formulario si no hay transacción
     }
-  }, [transaction]);
+  }, [transaction, filterBarajas, initialState]);
 
   const handleChange = (e: React.ChangeEvent<FormControlElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -112,6 +117,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ transaction, onSave }
       <Form.Group as={Row} className='mb-1'>
         <Form.Label column sm={2}>Descripción</Form.Label>
         <Col sm={10}>
+          {filterBarajas ? 
           <Form.Control 
             as="select"
             name="description" 
@@ -127,8 +133,16 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ transaction, onSave }
             <option value="VEN - APTO - 2B">Venezuela | Apto 2-B</option>
             <option value="VEN - APTO - 6B">Venezuela | Apto 6-B</option>
             <option value="ESP - VALLADOLID">España | Valladolid</option>
-            <option value="ESP - BARAJAS">España | Barajas</option>
             </Form.Control>
+            :
+            <Form.Control
+              type="text"
+              name="description"
+              value="España | Barajas" // El valor fijo que quieres mostrar
+              disabled
+              placeholder="España | Barajas" 
+            />
+          }
         </Col>
       </Form.Group>
       <Form.Group as={Row} className='mb-1'>
@@ -161,6 +175,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ transaction, onSave }
       <Form.Group as={Row} className='mb-1'>
         <Form.Label column sm={2}>Moneda</Form.Label>
         <Col sm={10}>
+        {filterBarajas ? 
           <Form.Control 
             as="select" 
             name="currency" 
@@ -171,6 +186,15 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ transaction, onSave }
             <option value="EUR">EUR</option>
             <option value="VES">VES</option>
           </Form.Control>
+          :
+          <Form.Control
+            type="text"
+            name="currency"
+            value="EUR" // El valor fijo que quieres mostrar
+            disabled
+            placeholder="EUR" 
+          />
+        }
         </Col>
       </Form.Group>
       {formData.currency === 'VES' && (
