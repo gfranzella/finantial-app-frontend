@@ -195,7 +195,7 @@ interface TransactionManagerProps {
 
   return (
       <Container>
-        <h1 className="my-5 text-center">Gestión de Finanzas</h1>
+        <h1 className="my-5 text-center">{filterBarajas ? "Gestión Proiedades" : "Gestión Barajas"}</h1>
         
         <div className="mb-2">
             <TransactionForm onSave={handleTransactionSave} filterBarajas={filterBarajas}/>
